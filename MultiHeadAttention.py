@@ -32,7 +32,7 @@ class MultiHeadAttention(nn.Module):
         queries = queries.permute(2, 0, 1, 3)
 
         # Compute energy scores using scaled dot-product attention
-        energy = torch.einsum("qbhv,kbhv->qhbk", [queries, keys])  # (heads, batch, query_len, key_len)
+        energy = torch.einsum("hnqd,hnkd->hnqk", [queries, keys])  # (heads, batch, query_len, key_len)
 
         # Apply mask (if provided)
         if mask is not None:
@@ -42,7 +42,8 @@ class MultiHeadAttention(nn.Module):
         attention = torch.softmax(energy / (self.head_dim ** 0.5), dim=-1)
 
         # Weighted sum of values
-        out = torch.einsum("qhbk,qbhv->qhv", [attention, values])  # (heads, batch, query_len, head_dim)
+        out = torch.einsum("hnqk,hnkd->hnqd", [attention, values]) # (heads, batch, query_len, head_dim)
+        print(f"Shape of out before permute: {out.shape}")
 
         # Rearrange back to original shape: (batch_size, query_len, embed_size)
         out = out.permute(1, 2, 0, 3).contiguous()
