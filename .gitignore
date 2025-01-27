@@ -1,0 +1,41 @@
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual environment
+venv/
+.env/
+
+# PyCharm specific files
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test and coverage reports
+coverage.xml
+*.cover
+*.py,cover
+*.log
+htmlcov/
+
+# Byte-compiled or JIT-compiled libraries
+*.so
+*.dll
+*.dylib
+
+# Build directories
+build/
+dist/
+*.egg-info/
+.eggs/
