@@ -81,7 +81,7 @@ model.device = device
 
 # Loss și optimizer
 criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
-optimizer = optim.AdamW(model.parameters(), lr=5e-5)
+optimizer = optim.AdamW(model.parameters(), lr=3e-4)
 
 model.train()
 for epoch in range(3):  # Numărul de epoci
