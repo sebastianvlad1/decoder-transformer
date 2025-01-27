@@ -80,7 +80,7 @@ model.to(device)
 model.device = device
 
 # Loss și optimizer
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
 optimizer = optim.AdamW(model.parameters(), lr=5e-5)
 
 model.train()
