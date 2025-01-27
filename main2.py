@@ -63,17 +63,17 @@ class GPTDataset(Dataset):
 train_dataset = GPTDataset(processed_dataset)
 from math import ceil
 print(f"Number of rows in the train dataset: {len(train_dataset)}")
-num_batches = ceil(len(train_dataset) / 4)
+num_batches = ceil(len(train_dataset) / 16)
 
 print(f"Number of batches in one epoch: {num_batches}")
 
 # Creează un DataLoader
-train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 
 
 gpt2_model = GPT2Model.from_pretrained("gpt2")
 # Presupunem că ai definit modelul GPT într-o clasă numită `GPT`
-model = GPT(gpt2_model, num_layers=6, heads=8, ff_hidden_size=2048, dropout=0.1, max_length=512)
+model = GPT(gpt2_model, num_layers=4, heads=4, ff_hidden_size=1024, dropout=0.1, max_length=512)
 
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 model.to(device)
@@ -81,10 +81,10 @@ model.device = device
 
 # Loss și optimizer
 criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
-optimizer = optim.AdamW(model.parameters(), lr=3e-4)
+optimizer = optim.AdamW(model.parameters(), lr=5e-4)
 
 model.train()
-for epoch in range(3):  # Numărul de epoci
+for epoch in range(1):  # Numărul de epoci
     for batch_idx, batch in enumerate(train_loader):
         inputs = batch["inputs"].to(model.device)
         targets = batch["targets"].to(model.device)
