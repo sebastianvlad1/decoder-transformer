@@ -24,13 +24,6 @@ class GPT(nn.Module):
     def forward(self, x, mask):
         N, seq_length = x.shape
 
-        # Generate causal mask
-        if mask is None:
-            # Lower-triangular boolean mask (shape: [N, 1, seq_len, seq_len])
-            mask = torch.tril(torch.ones((seq_length, seq_length), dtype=torch.bool))
-            mask = mask.unsqueeze(0).unsqueeze(0)  # Add batch and head dimensions
-            mask = mask.to(x.device)
-
         positions = torch.arange(0, seq_length).expand(N, seq_length).to(x.device)
 
         # Embed tokens and positions

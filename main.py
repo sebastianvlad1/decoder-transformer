@@ -11,16 +11,16 @@ if tokenizer.pad_token is None:
 
 # Load the GPT model and its saved state
 gpt2_model_config = {
-    "num_layers": 4,
-    "heads": 4,
-    "ff_hidden_size": 1024,
+    "num_layers": 12,
+    "heads": 12,
+    "ff_hidden_size": 3072,
     "dropout": 0.1,
     "max_length": 512,
 }
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 gpt2_model = GPT2Model.from_pretrained("gpt2")  # Load base GPT-2 model
 model = GPT(gpt2_model, **gpt2_model_config)
-model.load_state_dict(torch.load("gpt_model_test_only.pth", map_location=device))  # Load weights
+model.load_state_dict(torch.load("gpt_model1.pth", map_location=device))  # Load weights
 model.to(device)
 model.device = device
 
