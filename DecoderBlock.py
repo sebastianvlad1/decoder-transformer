@@ -17,7 +17,7 @@ class DecoderBlock(nn.Module):
         x = x + self.dropout(attention)
 
         # Feed-forward
-        feed_forward = self.feed_forward(self.norm1(x))
+        feed_forward = self.feed_forward(self.norm2(x))
         x = x + self.dropout(feed_forward)
 
         return x

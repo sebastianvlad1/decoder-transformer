@@ -25,7 +25,7 @@ model.to(device)
 model.device = device
 
 # Define the text generation function
-def generate_text(model, tokenizer, prompt, max_length=50, temperature=1.0):
+def generate_text(model, tokenizer, prompt, max_length=50, temperature=1.0, top_k=50):
     model.eval()  # Set the model to evaluation mode
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)  # Tokenize and move to device
     generated = input_ids
@@ -36,8 +36,12 @@ def generate_text(model, tokenizer, prompt, max_length=50, temperature=1.0):
             logits = model(generated, mask=None)
             next_token_logits = logits[:, -1, :] / temperature
 
-            # Sample next token
-            next_token = torch.argmax(next_token_logits, dim=-1).unsqueeze(0)
+            # Apply Top-k Sampling
+            top_k_probs, top_k_indices = torch.topk(next_token_logits, top_k)
+            next_token_probs = torch.nn.functional.softmax(top_k_probs, dim=-1)
+            next_token_idx = torch.multinomial(next_token_probs, 1).squeeze()
+            next_token = top_k_indices[0, next_token_idx].unsqueeze(0).unsqueeze(0)
+
             generated = torch.cat([generated, next_token], dim=-1)
 
             # Stop if <eos> token is generated
