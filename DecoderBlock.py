@@ -13,11 +13,11 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x, mask):
         # Self-attention
-        attention = self.attention(x, x, x, mask)
-        x = self.norm1(x + self.dropout(attention))
+        attention = self.attention(self.norm1(x), self.norm1(x), self.norm1(x), mask)
+        x = x + self.dropout(attention)
 
         # Feed-forward
-        feed_forward = self.feed_forward(x)
-        x = self.norm2(x + self.dropout(feed_forward))
+        feed_forward = self.feed_forward(self.norm1(x))
+        x = x + self.dropout(feed_forward)
 
         return x
