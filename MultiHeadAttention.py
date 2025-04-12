@@ -43,7 +43,6 @@ class MultiHeadAttention(nn.Module):
 
         # Weighted sum of values
         out = torch.einsum("hnqk,hnkd->hnqd", [attention, values]) # (heads, batch, query_len, head_dim)
-        print(f"Shape of out before permute: {out.shape}")
 
         # Rearrange back to original shape: (batch_size, query_len, embed_size)
         out = out.permute(1, 2, 0, 3).contiguous()

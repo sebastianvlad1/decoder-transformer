@@ -44,7 +44,7 @@ print(f"Number of rows in the train dataset: {len(train_dataset)}")
 print(f"Number of batches in one epoch: {num_batches}")
 
 # Creează un DataLoader
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 gpt2_model = GPT2Model.from_pretrained("gpt2")
 
 model = GPT(gpt2_model, num_layers=12, heads=12, ff_hidden_size=3072, dropout=0.1, max_length=512)
@@ -64,9 +64,9 @@ for epoch in range(1):  # Numărul de epoci
 
         # Generate causal mask
         seq_length = inputs.size(1)
-        causal_mask = torch.tril(torch.ones((seq_length, seq_length), dtype=torch.bool)).unsqueeze(0).to(device)
-        padding_mask = (inputs != tokenizer.pad_token_id).unsqueeze(1).to(device)
-        combined_mask = causal_mask & padding_mask
+        causal_mask = torch.tril(torch.ones((seq_length, seq_length), dtype=torch.bool)).unsqueeze(0).to(device) # [1, seq_len, seq_len]
+        padding_mask = (inputs != tokenizer.pad_token_id).unsqueeze(1).to(device) # [batch_size, 1, seq_len]
+        combined_mask = causal_mask & padding_mask # broadcasting [batch_size, seq_len, seq_len]
 
         # Forward pass
         logits = model(inputs, mask=combined_mask)
