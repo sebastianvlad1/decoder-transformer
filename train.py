@@ -15,10 +15,9 @@ device = (
 )
 
 dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
-#print(dataset)
 
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-# Add a special token for padding if it doenst exit
+# Add a special token for padding if it doesnt exit
 if tokenizer.pad_token is None:
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
@@ -28,26 +27,22 @@ def tokenize_function(examples):
 
 # Tokenize dataset
 tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
-#print(tokenized_dataset)
 
 def create_inputs_targets(examples):
     input_ids = torch.tensor(examples["input_ids"])
-    inputs = input_ids[:, :-1]  # Toate token-urile, mai puțin ultimul
-    targets = input_ids[:, 1:]  # Toate token-urile, mai puțin primul
+    inputs = input_ids[:, :-1]  # All tokens, except the last one
+    targets = input_ids[:, 1:]  # All tokens, except the first one
     return {"inputs": inputs, "targets": targets}
 
-# Aplică funcția pe întregul dataset
+# Apply the function on the entire dataset
 processed_dataset = tokenized_dataset.map(create_inputs_targets, batched=True)
-#print(processed_dataset)
 
-# Creează un obiect Dataset pentru antrenare
+# Create a Dataset object for training
 train_dataset = GPTDataset(processed_dataset)
 
 num_batches = ceil(len(train_dataset) / 16)
-print(f"Number of rows in the train dataset: {len(train_dataset)}")
-print(f"Number of batches in one epoch: {num_batches}")
 
-# Creează un DataLoader
+# Create a DataLoader object
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 gpt2_model = GPT2Model.from_pretrained("gpt2")
 
@@ -56,12 +51,12 @@ model = GPT(gpt2_model, num_layers=12, heads=12, ff_hidden_size=3072, dropout=0.
 model.to(device)
 model.device = device
 
-# Loss și optimizer
+# Define loss and optimizer
 criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
 optimizer = optim.AdamW(model.parameters(), lr=5e-4)
 
 model.train()
-for epoch in range(1):  # Numărul de epoci
+for epoch in range(1):  # Nr of epochs
     for batch_idx, batch in enumerate(train_loader):
         inputs = batch["inputs"].to(model.device)
         targets = batch["targets"].to(model.device)
