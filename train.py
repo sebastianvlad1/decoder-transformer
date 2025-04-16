@@ -8,7 +8,11 @@ from transformers import GPT2Tokenizer, GPT2Model
 from torch.utils.data import DataLoader
 from math import ceil
 
-device = "mps" if torch.backends.mps.is_available() else "cpu"
+device = (
+    torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if not torch.backends.mps.is_available()
+    else torch.device("mps")
+)
 
 dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
 #print(dataset)
