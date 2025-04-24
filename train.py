@@ -7,6 +7,7 @@ from GPTDataset import GPTDataset
 from transformers import GPT2Tokenizer, GPT2Model
 from torch.utils.data import DataLoader
 from math import ceil
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
 device = (
     torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,12 +52,19 @@ model = GPT(gpt2_model, num_layers=12, heads=12, ff_hidden_size=3072, dropout=0.
 model.to(device)
 model.device = device
 
+
 # Define loss and optimizer
 criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
+
 optimizer = optim.AdamW(model.parameters(), lr=5e-4)
 
+epochs = 3
+
+scheduler = CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
+
 model.train()
-for epoch in range(1):  # Nr of epochs
+
+for epoch in range(epochs):  # Nr of epochs
     for batch_idx, batch in enumerate(train_loader):
         inputs = batch["inputs"].to(model.device)
         targets = batch["targets"].to(model.device)
@@ -78,5 +86,6 @@ for epoch in range(1):  # Nr of epochs
 
         if batch_idx % 100 == 0:
             print(f"Epoch {epoch + 1}, Batch {batch_idx}, Loss: {loss.item()}")
+    scheduler.step()
 
 torch.save(model.state_dict(), "gpt_model1.pth")
