@@ -1,13 +1,7 @@
 import torch
 from transformers import GPT2Tokenizer, GPT2Model
 from GPT import GPT  # Import your custom GPT class
-
-# Load the tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-
-# Ensure padding token is set
-if tokenizer.pad_token is None:
-    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+from tokenizer_utils import configure_tokenizer
 
 # Load the GPT model and its saved state
 gpt2_model_config = {
@@ -17,17 +11,37 @@ gpt2_model_config = {
     "dropout": 0.1,
     "max_length": 512,
 }
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-gpt2_model = GPT2Model.from_pretrained("gpt2")  # Load base GPT-2 model
-model = GPT(gpt2_model, **gpt2_model_config)
-model.load_state_dict(torch.load("gpt_model1.pth", map_location=device))  # Load weights
-model.to(device)
-model.device = device
+
+
+def load_tokenizer():
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    return configure_tokenizer(tokenizer)
+
+
+def load_model(checkpoint_path="gpt_model1.pth"):
+    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    gpt2_model = GPT2Model.from_pretrained("gpt2")  # Load base GPT-2 embeddings
+    model = GPT(gpt2_model, **gpt2_model_config)
+    model.load_state_dict(torch.load(checkpoint_path, map_location=device))  # Load weights
+    model.to(device)
+    model.device = device
+    return model
 
 # Define the text generation function
 def generate_text(model, tokenizer, prompt, max_length=50, temperature=1.0, top_k=50):
     model.eval()  # Set the model to evaluation mode
-    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)  # Tokenize and move to device
+    device = getattr(model, "device", next(model.parameters()).device)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)  # Tokenize and move to device
+    prompt_length = input_ids.size(1)
+    if prompt_length > model.max_length:
+        raise ValueError(
+            f"Prompt length {prompt_length} exceeds model max_length {model.max_length}"
+        )
+
+    available_new_tokens = model.max_length - prompt_length
+    if max_length > available_new_tokens:
+        max_length = available_new_tokens
+
     generated = input_ids
 
     with torch.no_grad():  # Disable gradient calculations
@@ -50,7 +64,9 @@ def generate_text(model, tokenizer, prompt, max_length=50, temperature=1.0, top_
 
     return tokenizer.decode(generated[0], skip_special_tokens=True)
 
-# Example usage
-prompt = "Once upon a time"
-generated_text = generate_text(model, tokenizer, prompt, max_length=50)
-print("Generated text:", generated_text)
+if __name__ == "__main__":
+    tokenizer = load_tokenizer()
+    model = load_model()
+    prompt = "Once upon a time"
+    generated_text = generate_text(model, tokenizer, prompt, max_length=50)
+    print("Generated text:", generated_text)

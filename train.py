@@ -8,6 +8,7 @@ from transformers import GPT2Tokenizer, GPT2Model
 from torch.utils.data import DataLoader
 from math import ceil
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from tokenizer_utils import configure_tokenizer
 
 device = (
     torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -18,9 +19,7 @@ device = (
 dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
 
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-# Add a special token for padding if it doesnt exit
-if tokenizer.pad_token is None:
-    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+configure_tokenizer(tokenizer)
 
 # Tokenization function
 def tokenize_function(examples):
